@@ -73,31 +73,93 @@ if (isset($_SESSION['user_id'])) {
     </div>
 
     <!-- Modal Edit Profile -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Edit Profile</h2><br>
-            <form action="../Account/update_profile.php" method="POST">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="Enter your fullname">
-                <span id="nameError" class="error-message"></span><br>
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Profile</h2><br>
+        <form id="editProfileForm" action="../Account/update_profile.php" method="POST" onsubmit="return validateEditProfileForm();">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your fullname">
+            <span id="nameError" class="error-message"></span><br>
 
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter your new email">
-                <span id="emailError" class="error-message"></span><br>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your new email">
+            <span id="emailError" class="error-message"></span><br>
 
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your new password">
+            <span id="passwordError" class="error-message"></span><br>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your new password">
-                <span id="passwordError" class="error-message"></span><br>
-
-                <button type="submit">Save Changes</button>
-            </form>
-        </div>
+            <button type="submit">Save Changes</button>
+        </form>
     </div>
+</div>
 
     
     <script>
+
+    function validateEditProfileForm() {
+        var name = document.getElementById("name").value.trim();
+        var email = document.getElementById("email").value.trim();
+        var password = document.getElementById("password").value.trim();
+        var isValid = true;
+
+        // Validate name
+        if (name === "") {
+            document.getElementById("nameError").textContent = "Please enter your fullname.";
+            isValid = false;
+        } else {
+            document.getElementById("nameError").textContent = "";
+        }
+
+        // Validate email
+        if (email === "") {
+            document.getElementById("emailError").textContent = "Please enter your new email.";
+            isValid = false;
+        } else if (!validateEmail(email)) {
+            document.getElementById("emailError").textContent = "Please enter a valid email address.";
+            isValid = false;
+        } else {
+            document.getElementById("emailError").textContent = "";
+        }
+
+        // Validate password
+        if (password !== "" && password.length < 6) {
+            document.getElementById("passwordError").textContent = "Password must have at least 6 characters.";
+            isValid = false;
+        } else {
+            document.getElementById("passwordError").textContent = "";
+        }
+
+        return isValid;
+    }
+
+    // Email validation helper function
+    function validateEmail(email) {
+        var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        return re.test(email);
+    }
+
+    // Script to handle modal open and close
+    document.addEventListener("DOMContentLoaded", function () {
+        var modal = document.getElementById('editProfileModal');
+        var openEditProfile = document.getElementById('openEditProfile');
+        var closeBtn = document.getElementsByClassName('close')[0];
+
+        openEditProfile.onclick = function () {
+            modal.style.display = 'block';
+        }
+
+        closeBtn.onclick = function () {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    });
         document.addEventListener('DOMContentLoaded', function() {
             var profileBtn = document.getElementById('profileBtn');
             var profileDropdown = document.getElementById('profileDropdown');
