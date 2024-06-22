@@ -71,27 +71,27 @@ require_once('../Account/function.php');
     </div>
 
     <!-- Modal Edit Profile -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Edit Profile</h2><br>
-            <form action="../Account/update_profile.php" method="POST">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="Enter your fullname">
-                <span id="nameError" class="error-message"></span><br>
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Profile</h2><br>
+        <form id="editProfileForm" action="../Account/update_profile.php" method="POST" onsubmit="return validateEditProfileForm();">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your fullname">
+            <span id="nameError" class="error-message"></span><br>
 
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter your new email">
-                <span id="emailError" class="error-message"></span><br>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your new email">
+            <span id="emailError" class="error-message"></span><br>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your new password">
-                <span id="passwordError" class="error-message"></span><br>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your new password">
+            <span id="passwordError" class="error-message"></span><br>
 
-                <button type="submit">Save Changes</button>
-            </form>
-        </div>
+            <button type="submit">Save Changes</button>
+        </form>
     </div>
+</div>
 
     <div class="box">
         <!-- create-statement -->
@@ -112,60 +112,148 @@ require_once('../Account/function.php');
         </div>
     
         <!-- display-questions -->
-        <div class="display-questions">
-            <h3>Questions</h3>
-            <?php
-            include 'db.php';
+<div class="display-questions">
+    <h3>Questions</h3>
+    <?php
+    include 'db.php';
 
-            $sql = "SELECT * FROM questions ORDER BY created_at DESC";
-            $result = $conn->query($sql);
+    $sql = "SELECT * FROM questions ORDER BY created_at DESC";
+    $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    echo "<div class='question'>";
-                    echo "<h4>" . $row['title'] . "</h4>";
-                    echo "<p>" . $row['description'] . "</p>";
-                    echo "<div class='actions'>
-                            <button onclick='toggleDeleteForm(" . $row['id'] . ")'>Delete</button>
-                            <form id='delete-form-" . $row['id'] . "' class='delete-form' action='delete_question.php' method='POST' style='display:none;'>
-                            <input type='hidden' name='id' value='" . $row['id'] . "'>
-                            <button type='submit'>Confirm Delete</button>
-                            </form>
-                            <button onclick='toggleCommentForm(" . $row['id'] . ")'>Comment</button>
-                        
-                            <div>
-                                <form id='comment-form-" . $row['id'] . "' class='comment-form' action='submit_comment.php' method='POST' style='display:none;'>
-                                    <input type='hidden' name='question_id' value='" . $row['id'] . "'>
-                                    <textarea name='text' placeholder='Add a comment'></textarea>
-                                    <button type='submit'>Submit Comment</button>
-                                </form>
-                            </div>
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            echo "<div class='question'>";
+            echo "<h4>" . $row['title'] . "</h4>";
+            echo "<p>" . $row['description'] . "</p>";
+            echo "<div class='actions'>
+                    <button onclick='toggleDeleteForm(" . $row['id'] . ")'>Delete</button>
+                    <form id='delete-form-" . $row['id'] . "' class='delete-form' action='delete_question.php' method='POST' style='display:none;'>
+                    <input type='hidden' name='id' value='" . $row['id'] . "'>
+                    <button type='submit'>Confirm Delete</button>
+                    </form>
+                    <button onclick='toggleCommentForm(" . $row['id'] . ")'>Comment</button>
+                
+                    <div>
+                        <form id='comment-form-" . $row['id'] . "' class='comment-form' action='submit_comment.php' method='POST' style='display:none;' onsubmit='return validateCommentForm(" . $row['id'] . ");'>
+                            <input type='hidden' name='question_id' value='" . $row['id'] . "'>
+                            <textarea name='text' id='comment-text-" . $row['id'] . "' placeholder='Add a comment'></textarea>
+                            <span id='commentError-" . $row['id'] . "' class='error-message'></span>
+                            <button type='submit'>Submit Comment</button>
+                        </form>
+                    </div>
 
-                          </div>";
+                  </div>";
 
-                    // Fetch comments for the question
-                    $comment_sql = "SELECT * FROM comments WHERE question_id=" . $row['id'] . " ORDER BY created_at DESC";
-                    $comment_result = $conn->query($comment_sql);
+            // Fetch comments for the question
+            $comment_sql = "SELECT * FROM comments WHERE question_id=" . $row['id'] . " ORDER BY created_at DESC";
+            $comment_result = $conn->query($comment_sql);
 
-                    if ($comment_result->num_rows > 0) {
-                        echo "<div class='comments'>";
-                        while($comment_row = $comment_result->fetch_assoc()) {
-                            echo "<p>" . $comment_row['text'] . "</p>";
-                        }
-                        echo "</div>";
-                    }
-                    echo "</div>";
+            if ($comment_result->num_rows > 0) {
+                echo "<div class='comments'>";
+                while($comment_row = $comment_result->fetch_assoc()) {
+                    echo "<p>" . $comment_row['text'] . "</p>";
                 }
-            } else {
-                echo "<p>No questions found</p>";
+                echo "</div>";
             }
+            echo "</div>";
+        }
+    } else {
+        echo "<p>No questions found</p>";
+    }
 
-            $conn->close();
-            ?>
-        </div>
-    </div>
+    $conn->close();
+    ?>
+</div>
+
 
     <script>
+        function validateEditProfileForm() {
+        var name = document.getElementById("name").value.trim();
+        var email = document.getElementById("email").value.trim();
+        var password = document.getElementById("password").value.trim();
+        var isValid = true;
+
+        // Validate name
+        if (name === "") {
+            document.getElementById("nameError").textContent = "Please enter your fullname.";
+            isValid = false;
+        } else {
+            document.getElementById("nameError").textContent = "";
+        }
+
+        // Validate email
+        if (email === "") {
+            document.getElementById("emailError").textContent = "Please enter your new email.";
+            isValid = false;
+        } else if (!validateEmail(email)) {
+            document.getElementById("emailError").textContent = "Please enter a valid email address.";
+            isValid = false;
+        } else {
+            document.getElementById("emailError").textContent = "";
+        }
+
+        // Validate password
+        if (password !== "" && password.length < 6) {
+            document.getElementById("passwordError").textContent = "Password must have at least 6 characters.";
+            isValid = false;
+        } else {
+            document.getElementById("passwordError").textContent = "";
+        }
+
+        return isValid;
+    }
+
+    // Email validation helper function
+    function validateEmail(email) {
+        var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        return re.test(email);
+    }
+
+    // Script to handle modal open and close
+    document.addEventListener("DOMContentLoaded", function () {
+        var modal = document.getElementById('editProfileModal');
+        var openEditProfile = document.getElementById('openEditProfile');
+        var closeBtn = document.getElementsByClassName('close')[0];
+
+        openEditProfile.onclick = function () {
+            modal.style.display = 'block';
+        }
+
+        closeBtn.onclick = function () {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    });
+        // Function to toggle delete form visibility
+    function toggleDeleteForm(questionId) {
+        var deleteForm = document.getElementById('delete-form-' + questionId);
+        deleteForm.style.display = deleteForm.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Function to toggle comment form visibility
+    function toggleCommentForm(questionId) {
+        var commentForm = document.getElementById('comment-form-' + questionId);
+        commentForm.style.display = commentForm.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Client-side validation for comment form
+    function validateCommentForm(questionId) {
+        var commentText = document.getElementById('comment-text-' + questionId).value.trim();
+        var commentError = document.getElementById('commentError-' + questionId);
+        
+        if (commentText === "") {
+            commentError.textContent = "Please enter a comment.";
+            return false;
+        } else {
+            commentError.textContent = "";
+            return true;
+        }
+    }
         // Script untuk meng-handle dropdown pada profil user
         document.addEventListener("DOMContentLoaded", function () {
             var profileDropdown = document.getElementById('profileDropdown');
